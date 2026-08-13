@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Connect — Meditate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="util-bar on-light" id="utilBar"></div>
+
+  <div class="app-body" style="padding-bottom:100px;">
+    <div class="section-pad">
+      <p style="font-size:12px; color:var(--inksoft);">No login or request needed</p>
+      <h2 class="serif" style="font-size:20px; margin-top:4px;">Take a moment to breathe</h2>
+      <div id="suggestedBanner" style="display:none; margin-top:12px; background:var(--green-soft); color:var(--green); padding:10px 14px; border-radius:14px; font-size:12px; font-weight:600;">
+        Based on your last check-in, this might help right now ↓
+      </div>
+    </div>
+
+    <div class="section-pad" style="padding-top:6px;">
+      <span class="chip active" data-f="all" onclick="filterTracks('all')">All</span>
+      <span class="chip" data-f="craving" onclick="filterTracks('craving')">Craving</span>
+      <span class="chip" data-f="anxiety" onclick="filterTracks('anxiety')">Anxiety</span>
+      <span class="chip" data-f="mood" onclick="filterTracks('mood')">Low mood</span>
+      <span class="chip" data-f="sleep" onclick="filterTracks('sleep')">Sleep</span>
+    </div>
+
+    <div class="section-pad" style="padding-top:6px;" id="trackList">
+      <!-- tracks injected by script -->
+    </div>
+  </div>
+
+  <div class="bottom-nav" id="nav"></div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  renderUtilBar(true);
+  renderNav('meditate');
+
+  const tracks = [
+    { title: "Riding Out a Craving", dur: "6 min", tag: "craving", desc: "A short audio to sit with an urge without acting on it." },
+    { title: "5-Minute Box Breathing", dur: "5 min", tag: "anxiety", desc: "A simple breathing pattern to calm a racing mind." },
+    { title: "Grounding: 5 Senses", dur: "4 min", tag: "anxiety", desc: "Bring yourself back to the present moment." },
+    { title: "Gentle Body Scan", dur: "10 min", tag: "mood", desc: "A slow, kind check-in with your body, for heavy days." },
+    { title: "Soft Wind-Down", dur: "12 min", tag: "sleep", desc: "Calming audio to help you fall asleep." },
+    { title: "Morning Reset", dur: "3 min", tag: "mood", desc: "A short practice to start the day a little lighter." },
+  ];
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('suggested') === '1') {
+    document.getElementById('suggestedBanner').style.display = 'block';
+    const catMap = { addiction: 'craving', anxiety: 'anxiety', depression: 'mood', other: 'anxiety' };
+    filterTracks(catMap[getCategory()] || 'craving');
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.f === (catMap[getCategory()] || 'craving')));
+  } else {
+    renderTracks(tracks);
+  }
+
+  function renderTracks(list) {
+    document.getElementById('trackList').innerHTML = list.map(t => `
+      <div class="card track-card">
+        <div class="track-play">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:12.5px; font-weight:600;">${t.title}</p>
+          <p style="font-size:11px; color:var(--inksoft); margin-top:2px;">${t.desc}</p>
+        </div>
+        <span class="track-dur">${t.dur}</span>
+      </div>
+    `).join('');
+  }
+
+  function filterTracks(tag) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.f === tag));
+    renderTracks(tag === 'all' ? tracks : tracks.filter(t => t.tag === tag));
+  }
+</script>
+</body>
+</html>
