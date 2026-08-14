@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Connect — Breathe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .breathe-wrap {
+    min-height: 100vh;
+    background: var(--header);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px 20px 40px;
+  }
+  .breathe-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .breathe-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .breathe-pattern { font-size: 11px; color: var(--header-soft); font-family: Arial, sans-serif; }
+
+  .breathe-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .breathe-rings {
+    position: relative;
+    width: 240px; height: 240px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .breathe-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(143, 191, 63, 0.35);
+  }
+  .breathe-core {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #A7DD6A, var(--lime) 70%);
+    transition: transform 4s ease-in-out;
+    box-shadow: 0 0 60px rgba(143,191,63,0.35);
+  }
+  .breathe-label {
+    margin-top: 34px;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 24px;
+    color: #fff;
+  }
+  .breathe-sub {
+    margin-top: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: var(--header-soft);
+  }
+
+  .breathe-bottom { width: 100%; }
+  .breathe-timer { text-align: center; font-family: Arial, sans-serif; font-size: 11px; color: var(--header-soft); margin-bottom: 12px; }
+  .breathe-controls { display: flex; gap: 10px; }
+  .breathe-btn {
+    flex: 1; padding: 14px; border-radius: 999px;
+    font-family: Arial, sans-serif; font-weight: 700; font-size: 13px;
+    background: var(--lime); color: var(--header);
+  }
+  .breathe-btn.secondary { background: rgba(255,255,255,0.12); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="breathe-wrap">
+  <div class="breathe-top">
+    <div>
+      <p style="color:#fff; font-family:'Fraunces',Georgia,serif; font-size:16px;">Box Breathing</p>
+      <p class="breathe-pattern">Inhale 4s · Hold 4s · Exhale 4s · Hold 4s</p>
+    </div>
+    <a href="meditate.html" class="breathe-close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </a>
+  </div>
+
+  <div class="breathe-stage">
+    <div class="breathe-rings">
+      <div class="breathe-ring" style="width:240px; height:240px;"></div>
+      <div class="breathe-ring" style="width:190px; height:190px;"></div>
+      <div class="breathe-core" id="breatheCore"></div>
+    </div>
+    <p class="breathe-label" id="breatheLabel">Ready?</p>
+    <p class="breathe-sub" id="breatheSub">Tap start when you're ready</p>
+  </div>
+
+  <div class="breathe-bottom">
+    <p class="breathe-timer" id="breatheTimer">2 minute session</p>
+    <div class="breathe-controls">
+      <button class="breathe-btn secondary" onclick="setDuration()">2 min</button>
+      <button class="breathe-btn" id="startBtn" onclick="toggleStart()">Start</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  const core = document.getElementById('breatheCore');
+  const label = document.getElementById('breatheLabel');
+  const sub = document.getElementById('breatheSub');
+  const timerEl = document.getElementById('breatheTimer');
+  const startBtn = document.getElementById('startBtn');
+
+  const phases = [
+    { label: 'Breathe In',  sub: 'Fill your lungs slowly',  scale: 1.5, dur: 4000 },
+    { label: 'Hold',        sub: 'Stay steady',              scale: 1.5, dur: 4000 },
+    { label: 'Breathe Out', sub: 'Let it go, slowly',        scale: 1.0, dur: 4000 },
+    { label: 'Hold',        sub: 'Rest here',                scale: 1.0, dur: 4000 },
+  ];
+
+  let running = false;
+  let phaseIdx = 0;
+  let phaseTimeout = null;
+  let sessionSeconds = 120;
+  let remaining = sessionSeconds;
+  let countdownInterval = null;
+
+  function setDuration() {
+    if (running) return;
+    sessionSeconds = sessionSeconds === 120 ? 300 : 120;
+    remaining = sessionSeconds;
+    timerEl.textContent = (sessionSeconds / 60) + ' minute session';
+  }
+
+  function runPhase() {
+    if (!running) return;
+    const p = phases[phaseIdx % phases.length];
+    core.style.transition = (p.label === 'Hold') ? 'transform 0.3s ease' : 'transform 4s ease-in-out';
+    core.style.transform = `scale(${p.scale})`;
+    label.textContent = p.label;
+    sub.textContent = p.sub;
+    phaseIdx++;
+    phaseTimeout = setTimeout(runPhase, p.dur);
+  }
+
+  function toggleStart() {
+    running = !running;
+    if (running) {
+      startBtn.textContent = 'Pause';
+      phaseIdx = 0;
+      runPhase();
+      countdownInterval = setInterval(() => {
+        remaining--;
+        const m = Math.floor(remaining / 60), s = remaining % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2,'0')} remaining`;
+        if (remaining <= 0) {
+          finishSession();
+        }
+      }, 1000);
+    } else {
+      startBtn.textContent = 'Resume';
+      clearTimeout(phaseTimeout);
+      clearInterval(countdownInterval);
+      label.textContent = 'Paused';
+      sub.textContent = 'Tap resume to continue';
+    }
+  }
+
+  function finishSession() {
+    running = false;
+    clearTimeout(phaseTimeout);
+    clearInterval(countdownInterval);
+    core.style.transition = 'transform 1s ease';
+    core.style.transform = 'scale(1)';
+    label.textContent = 'Well done';
+    sub.textContent = 'Session complete';
+    startBtn.textContent = 'Start again';
+    timerEl.textContent = (sessionSeconds / 60) + ' minute session';
+    remaining = sessionSeconds;
+  }
+</script>
+</body>
+</html>

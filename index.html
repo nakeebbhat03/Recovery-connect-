@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Connect — Sign in</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="util-bar" id="utilBarLogin" style="position:absolute; top:0; right:0; z-index:5;"></div>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <p class="login-eyebrow">Recovery Connect</p>
+    <h1 class="login-title serif">A private space to ask for help</h1>
+    <p class="login-sub">No name required. Sign in with any alias to save your daily check-ins, or continue as a guest.</p>
+
+    <form id="loginForm" onsubmit="return handleLogin(event)">
+      <div class="field">
+        <label for="alias">Alias (anything you like)</label>
+        <input type="text" id="alias" placeholder="e.g. Chinar_92" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="pin">4-digit PIN</label>
+        <input type="password" id="pin" maxlength="4" inputmode="numeric" placeholder="••••">
+      </div>
+      <button type="submit" class="btn-primary">Continue securely</button>
+    </form>
+
+    <div class="divider">OR</div>
+
+    <button class="btn-ghost" onclick="continueGuest()">
+      Continue as guest — fully anonymous
+    </button>
+
+    <p class="login-privacy">Your identity is never shared with anyone, including counselors, unless you choose to.</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  document.getElementById('utilBarLogin').innerHTML = `<button class="util-btn" id="themeBtn" onclick="toggleTheme()">☾</button>`;
+  applyTheme();
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const alias = document.getElementById('alias').value.trim() || "Guest";
+    localStorage.setItem('rc_alias', alias);
+    window.location.href = 'category.html';
+    return false;
+  }
+  function continueGuest() {
+    localStorage.setItem('rc_alias', 'Guest');
+    window.location.href = 'category.html';
+  }
+</script>
+
+</body>
+</html>
